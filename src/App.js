@@ -1,25 +1,22 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import FileUpload from './components/fileUpload';
+import PersonList from './components/showPeople';
+import Home from './components/home';
 
 function App() {
+  const pathname = window.location.pathname;
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <a href="http://localhost:3000/home">
+      <h1>Walmart Invoice Splitter</h1>
+    </a>
+    <div style={{ display: 'flex' }}>
+      {pathname.includes('/person') && <PersonList />}
+      {pathname.includes('/orders') && <FileUpload />}
+      {pathname.includes('/home') && <Home />}
     </div>
+  </div>
   );
 }
-
 export default App;
