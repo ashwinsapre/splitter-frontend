@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Chip from '@mui/material/Chip';
+import { Button, Table, Card, Badge } from 'react-bootstrap';
 
 const OrderDetails = () => {
   const [orderDetails, setOrderDetails] = useState();
@@ -333,6 +334,12 @@ const OrderDetails = () => {
     }
   };
 
+  const handleClose = () => {
+    // Navigate to "/orders" when the "Close" button is clicked
+    window.location.href = `/orders/`;
+    
+  };
+
   useEffect(() => {
     window.addEventListener('beforeunload', handleBeforeUnload);
 
@@ -365,26 +372,31 @@ const OrderDetails = () => {
   }
 
   return (
-    <div>
-      <h1>Order Details for Order ID: {orderID} <button onClick={handleSave}>Save</button></h1>
-      <div style={{ display: 'flex', flexDirection: 'row', marginTop: '10px' }}>
+    <div className="container mt-5">
+      <h1>Order Details for Order ID: {orderID} <Button variant="primary" onClick={handleSave}>Save</Button></h1>
+      <div className="d-flex flex-row mt-4">
         {people && itemChips &&
           people
             .filter(person => Object.values(itemChips).flat().some(chip => chip.id === person.id))
             .map(person => (
-              <div key={person.id} style={{ marginRight: '20px' }}>
-                <h4>{person.name}</h4>
-                <p>Total: {personTotals[person.id] || 0}</p>
-              </div>
+              <Card key={person.id} className="mr-3">
+                <Card.Body>
+                  <Card.Title>{person.name}</Card.Title>
+                  <Card.Text>Total: {personTotals[person.id] || 0}</Card.Text>
+                </Card.Body>
+              </Card>
             ))}
       </div>
-      <button onClick={handleClearAllChips}>Clear All Chips</button>
-      <table>
+      <Button variant="danger" className="mt-3" onClick={handleClearAllChips}>Clear All Chips</Button>
+      <Button variant="secondary" className="mt-3 ml-2" onClick={handleClose}>Close</Button> {/* Close button */}
+      <Table striped bordered hover className="mt-3">
         <thead>
           <tr>
             <th>Name</th>
             <th>Price</th>
             <th>Quantity</th>
+            <th>Chips</th>
+            <th>Add Person</th>
           </tr>
         </thead>
         <tbody>
@@ -394,29 +406,28 @@ const OrderDetails = () => {
                   onDoubleClick={() => handleItemNameDoubleClick(item.name)}
               >
                 {item.name}
-                
               </td>
               <td>{item.price}</td>
               <td>{item.quantity}</td>
-              <td id="chips">
-              {itemChips[item.name] &&
-  itemChips[item.name].map((chip, index) => (
-    <Chip
-      key={chip.id}
-      label={`${chip.name} - ${chip.quantity.toFixed(2)}`} // Display float with 2 decimal places
-      id={chip.id}
-      onDelete={() => handleRemoveChip(item.name, chip.id)}
-      variant="outlined"
-      onClick={() => {
-        const newQuantity = parseFloat(
-          prompt(`Enter new quantity for ${chip.name}`, chip.quantity)
-        );
-        if (!isNaN(newQuantity) && newQuantity >= 0) {
-          handleQuantityChange(item.name, chip.id, newQuantity);
-        }
-      }}
-    />
-  ))}
+              <td>
+                {itemChips[item.name] &&
+                  itemChips[item.name].map((chip, index) => (
+                    <Chip
+                      key={chip.id}
+                      label={`${chip.name} - ${chip.quantity.toFixed(2)}`} // Display float with 2 decimal places
+                      id={chip.id}
+                      onDelete={() => handleRemoveChip(item.name, chip.id)}
+                      variant="outlined"
+                      onClick={() => {
+                        const newQuantity = parseFloat(
+                          prompt(`Enter new quantity for ${chip.name}`, chip.quantity)
+                        );
+                        if (!isNaN(newQuantity) && newQuantity >= 0) {
+                          handleQuantityChange(item.name, chip.id, newQuantity);
+                        }
+                      }}
+                    />
+                ))}
               </td>
               <td>
                 <input
@@ -428,7 +439,7 @@ const OrderDetails = () => {
             </tr>
           ))}
         </tbody>
-      </table>
+      </Table>
     </div>
   );
 };

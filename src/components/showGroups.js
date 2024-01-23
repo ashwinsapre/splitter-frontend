@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Chip from '@mui/material/Chip';
+import { Button, Form, InputGroup, FormControl } from 'react-bootstrap';
 
 const Groups = ({ people }) => {
   const [groups, setGroups] = useState([]);
@@ -47,26 +48,21 @@ const Groups = ({ people }) => {
           initialMap[group.id] = [];
         }
         });
-        console.log("group members data:", initialMap);
         setGroupPersonMap(initialMap);
       } catch (error) {
         console.error('Error fetching group members:', error);
       }
     };
     fetchGroupMembers();
-    }, [groups]); // Include people as a dependency to ensure the correct person data is used
+    }, [groups, people]); // Include people as a dependency to ensure the correct person data is used
 
   const handleRemovePersonFromGroup = (groupID, personName) => {
-    console.log(`Removing ${personName} from group ${groupID}`);
-    // Copy the current mapping
     const updatedGroupPersonMap = { ...groupPersonMap };
 
-    // Remove the person from the group
     updatedGroupPersonMap[groupID] = updatedGroupPersonMap[groupID].filter(
       (name) => name !== personName
     );
 
-    // Update the state
     setGroupPersonMap(updatedGroupPersonMap);
   };
 
@@ -77,7 +73,6 @@ const Groups = ({ people }) => {
       [groupID]: value,
     }));
 
-    // Automatically add the person to the group if their name matches and they are not already in the group
     const person = people.find((person) => person.name.toLowerCase() === value.toLowerCase());
     if (person && !groupPersonMap[groupID]?.includes(person.name)) {
       setGroupPersonMap((prevMap) => ({
@@ -86,7 +81,7 @@ const Groups = ({ people }) => {
       }));
       setInputValues((prevValues) => ({
         ...prevValues,
-        [groupID]: '', // Clear the input field after adding
+        [groupID]: '',
       }));
     }
   };
@@ -100,30 +95,27 @@ const Groups = ({ people }) => {
         ),
       })),
     };
-    console.log(payload);
 
     try {
       const response = await axios.post('http://localhost:8080/groups/saveGroup', payload);
       console.log('Group members saved successfully:', response.data);
-      // Add any additional handling for success
     } catch (error) {
       console.error('Error saving group members:', error);
-      // Add any error handling
     }
   };
 
   const handleCreateGroup = async () => {
-    const groupName = prompt('Enter group name:'); // You can use a UI component for a better user experience
+    const groupName = prompt('Enter group name:');
     if (groupName) {
       const formData = new FormData();
       formData.append('name', groupName);
-      try{
-        axios.post('http://localhost:8080/groups', formData, {
+      try {
+        await axios.post('http://localhost:8080/groups', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
-          },});
-      }
-      catch(error){
+          },
+        });
+      } catch (error) {
         console.error('Error uploading group:', error);
       }
     }
@@ -131,39 +123,47 @@ const Groups = ({ people }) => {
   };
 
   return (
-    <div>
+    <div className="container mt-5">
       <h2>Groups</h2>
-      <button onClick={handleCreateGroup}>Create Group</button>
+      <Button variant="primary" onClick={handleCreateGroup}>
+        Create Group
+      </Button>
       {groups ? (
-        <ul>
+        <ul className="list-group mt-3">
           {groups.map((group) => (
-            <li key={group.id}>
-              {group.name}
-              {groupMembers && groupPersonMap[group.id] && (
-                <div>
-                  {groupPersonMap[group.id].map((memberName) => (
-                    <Chip
-                      key={memberName}
-                      label={memberName}
-                      onDelete={() => handleRemovePersonFromGroup(group.id, memberName)}
-                      variant="outlined"
-                    />
-                  ))}
-                  <input
-                    type="text"
-                    placeholder="Add person..."
-                    value={inputValues[group.id] || ''}
-                    onChange={(e) => handleInputChange(group.id, e)}
-                  />
-                </div>
-              )}
+            <li key={group.id} className="list-group-item">
+              <div className="d-flex justify-content-between align-items-center">
+                <span>{group.name}</span>
+                {groupMembers && groupPersonMap[group.id] && (
+                  <div className="d-flex flex-wrap">
+                    {groupPersonMap[group.id].map((memberName) => (
+                      <Chip
+                        key={memberName}
+                        label={memberName}
+                        onDelete={() => handleRemovePersonFromGroup(group.id, memberName)}
+                        variant="outlined"
+                        className="m-1"
+                      />
+                    ))}
+                    <InputGroup className="mb-3">
+                      <FormControl
+                        placeholder="Add person..."
+                        value={inputValues[group.id] || ''}
+                        onChange={(e) => handleInputChange(group.id, e)}
+                      />
+                    </InputGroup>
+                  </div>
+                )}
+              </div>
             </li>
           ))}
         </ul>
       ) : (
         <p>No groups available</p>
       )}
-      <button onClick={handleSave}>Save Group Members</button>
+      <Button variant="success" className="mt-3" onClick={handleSave}>
+        Save Group Members
+      </Button>
     </div>
   );
 };

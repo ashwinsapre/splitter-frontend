@@ -8,14 +8,16 @@ const FileUpload = () => {
   const [uploaded, setUploaded] = useState(false);
   const [key, setKey] = useState(0);
 
+  // Function to handle file change
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
 
-  const handleUpload = async () => {
+  // Function to handle file upload
+  const handleUpload = async (uploadedFile) => {
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', uploadedFile);
 
       await axios.post('http://localhost:8080/upload', formData, {
         headers: {
@@ -24,7 +26,7 @@ const FileUpload = () => {
       });
 
       setUploaded(true);
-      setKey((prevKey) => prevKey + 1); 
+      setKey((prevKey) => prevKey + 1);
     } catch (error) {
       console.error('Error uploading file:', error);
     }
@@ -32,10 +34,8 @@ const FileUpload = () => {
 
   return (
     <div>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload}>Upload</button>
-
-      {<FileList key={key} directory="uploaded-directory" />}
+      {/* Display the FileList component with the key */}
+      <FileList key={key} directory="uploaded-directory" onUpload={handleUpload} />
       <OrderDetails />
     </div>
   );

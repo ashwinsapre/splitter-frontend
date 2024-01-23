@@ -5,13 +5,11 @@ import Groups from './showGroups';
 
 const PersonList = () => {
   const [people, setPeople] = useState(null);
-  // const [person, setPerson] = useState(null);
 
   useEffect(() => {
     const fetchPeople = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/person`);
-        console.log(response.data);
         setPeople(response.data);
       } catch (error) {
         console.error('Error fetching people:', error);
@@ -22,39 +20,63 @@ const PersonList = () => {
   }, []);
 
   const createNewPerson = async () => {
-    // Use window.prompt to get the name from the user
     const newName = window.prompt('Enter the name of the new person:');
     
     if (newName) {
       const formData = new FormData();
       formData.append('name', newName);
-      try{
-        axios.post('http://localhost:8080/person', formData, {
+
+      try {
+        await axios.post('http://localhost:8080/person', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
-          },});
-      }
-      catch(error){
+          },
+        });
+      } catch (error) {
         console.error('Error uploading file:', error);
       }
-      
     }
   };
 
   return (
     <div>
-      <h2>People:</h2>
-      <ul>
-        {people &&
-          people.map((document) => (
-            <div key={document.name}>
-              <p>Name: {document.name}</p>
-            </div>
-          ))}
-      </ul>
-      <button onClick={createNewPerson}>Add Person</button>
-      <PersonDetails></PersonDetails>
-      <Groups people={people}></Groups>
+      {/* Navbar */}
+      <nav className="navbar navbar-expand-lg navbar-light bg-light">
+        <div className="container">
+          <a className="navbar-brand" href="/home">Walmart Splitter</a>
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <ul className="navbar-nav">
+              <li className="nav-item">
+                <a className="nav-link" href="/orders">Orders</a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link" href="/person">About</a>
+              </li>
+              {/* Add more links as needed */}
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      {/* Content */}
+      <div className="container mt-5">
+        <h2>People:</h2>
+        <ul className="list-group">
+          {people &&
+            people.map((document) => (
+              <li key={document.name} className="list-group-item">
+                <p className="mb-0">Name: {document.name}</p>
+              </li>
+            ))}
+        </ul>
+        <button className="btn btn-primary mt-3" onClick={createNewPerson}>
+          Add Person
+        </button>
+        <div className="mt-4">
+          <PersonDetails />
+          <Groups people={people} />
+        </div>
+      </div>
     </div>
   );
 };
