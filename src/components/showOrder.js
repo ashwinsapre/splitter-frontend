@@ -373,7 +373,7 @@ const OrderDetails = () => {
 
   return (
     <div className="container mt-5">
-      <h1>Order Details for Order ID: {orderID} <Button variant="primary" onClick={handleSave}>Save</Button></h1>
+      <h1>Order ID {orderID} <Button variant="primary" onClick={handleSave}>Save</Button></h1>
       <div className="d-flex flex-row mt-4">
         {people && itemChips &&
           people

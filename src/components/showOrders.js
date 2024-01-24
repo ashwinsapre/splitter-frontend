@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Card, ListGroup, ListGroupItem, Button, Modal, Form, Navbar, Nav } from 'react-bootstrap';
+import { Card, Button, Modal, Form, Navbar, Nav } from 'react-bootstrap';
 
 const handleFileClick = (file) => {
   console.log(`Clicked on file: ${file}`);
@@ -34,9 +34,9 @@ const FileList = ({ directory, onUpload }) => {
   };
 
   return (
-    <div>
+    <div className="container-fluid">
       {/* Navbar */}
-      <Navbar bg="light" expand="lg">
+      <Navbar bg="light" expand="lg" className="w-100">
         <Navbar.Brand href="/home">Walmart Splitter</Navbar.Brand>
         <Navbar.Toggle aria-controls="navbarNav" />
         <Navbar.Collapse id="navbarNav">

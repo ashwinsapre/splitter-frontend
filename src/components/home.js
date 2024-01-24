@@ -1,8 +1,12 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Navbar, Nav } from 'react-bootstrap';
 
 const Home = () => {
   return (
+    <div className="container-fluid">
+    <div className="row">
+      
     <div className="container mt-5">
       <h1 className="text-center mb-4">Welcome to Your Dashboard</h1>
       <div className="row justify-content-center">
@@ -29,6 +33,8 @@ const Home = () => {
           </div>
         </div>
       </div>
+    </div>
+    </div>
     </div>
   );
 };

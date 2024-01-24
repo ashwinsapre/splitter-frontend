@@ -10,7 +10,7 @@ function App() {
   return (
     <div className="App">
     <div style={{ display: 'flex' }}>
-      {pathname.includes('/person') && <PersonList />}
+      {pathname.includes('/person') && <PeopleAndGroups />}
       {pathname.includes('/orders') && <FileUpload />}
       {pathname.includes('/home') && <Home />}
     </div>

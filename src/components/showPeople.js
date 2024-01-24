@@ -1,27 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import PersonDetails from './showPerson';
-import Groups from './showGroups';
+import { Card, ListGroup, ListGroupItem, Button, Modal, Form, Navbar, Nav } from 'react-bootstrap';
 
-const PersonList = () => {
-  const [people, setPeople] = useState(null);
+const PersonList = ({ people }) => {
+  const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    const fetchPeople = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8080/person`);
-        setPeople(response.data);
-      } catch (error) {
-        console.error('Error fetching people:', error);
-      }
-    };
+  const handleClose = () => setShowModal(false);
+  const handleShow = () => setShowModal(true);
 
-    fetchPeople();
-  }, []);
-
-  const createNewPerson = async () => {
-    const newName = window.prompt('Enter the name of the new person:');
-    
+  const createNewPerson = async (newName) => {
     if (newName) {
       const formData = new FormData();
       formData.append('name', newName);
@@ -32,6 +19,7 @@ const PersonList = () => {
             'Content-Type': 'multipart/form-data',
           },
         });
+        handleClose();
       } catch (error) {
         console.error('Error uploading file:', error);
       }
@@ -40,42 +28,50 @@ const PersonList = () => {
 
   return (
     <div>
-      {/* Navbar */}
-      <nav className="navbar navbar-expand-lg navbar-light bg-light">
-        <div className="container">
-          <a className="navbar-brand" href="/home">Walmart Splitter</a>
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav">
-              <li className="nav-item">
-                <a className="nav-link" href="/orders">Orders</a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link" href="/person">About</a>
-              </li>
-              {/* Add more links as needed */}
-            </ul>
-          </div>
-        </div>
-      </nav>
 
       {/* Content */}
       <div className="container mt-5">
-        <h2>People:</h2>
-        <ul className="list-group">
-          {people &&
-            people.map((document) => (
-              <li key={document.name} className="list-group-item">
-                <p className="mb-0">Name: {document.name}</p>
-              </li>
-            ))}
-        </ul>
-        <button className="btn btn-primary mt-3" onClick={createNewPerson}>
-          Add Person
-        </button>
-        <div className="mt-4">
-          <PersonDetails />
-          <Groups people={people} />
-        </div>
+        <Card style={{ cursor: 'pointer' }} onClick={handleShow}>
+          <Card.Body>
+            <Card.Title>Add New Person</Card.Title>
+            <Card.Text>Click here to add a new person.</Card.Text>
+          </Card.Body>
+        </Card>
+
+        {people &&
+          people.map((document) => (
+            <Card
+              key={document.name}
+              style={{ cursor: 'pointer' }}
+              onClick={() => console.log(`Clicked on person: ${document.name}`)}
+            >
+              <Card.Body>
+                <Card.Title>{document.name}</Card.Title>
+              </Card.Body>
+            </Card>
+          ))}
+
+        <Modal show={showModal} onHide={handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Add New Person</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group controlId="formName" className="mb-3">
+                <Form.Label>Enter the name of the new person:</Form.Label>
+                <Form.Control
+                  type="text"
+                  onChange={(e) => createNewPerson(e.target.value)}
+                />
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClose}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </div>
   );
