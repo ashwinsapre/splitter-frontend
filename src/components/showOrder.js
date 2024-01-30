@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Chip from '@mui/material/Chip';
+import { Button, Table, Card, Badge } from 'react-bootstrap';
 
 const OrderDetails = () => {
   const [orderDetails, setOrderDetails] = useState();
@@ -12,6 +13,15 @@ const OrderDetails = () => {
   const [unsavedChanges, setUnsavedChanges] = useState(false);
   const [groups, setGroups] = useState();
   const [groupNames, setGroupNames] = useState();
+  const [saveConfirmation, setSaveConfirmation] = useState(false);
+  const [saveFailure, setSaveFailure] = useState(false);
+  const [totalAmount, setTotalAmount] = useState(0);
+
+  useEffect(() => {
+    // Calculate the total amount whenever personTotals change
+    const sum = Object.values(personTotals).reduce((total, amount) => total + amount, 0);
+    setTotalAmount(sum);
+  }, [personTotals]);
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
@@ -33,7 +43,6 @@ const OrderDetails = () => {
     axios.get(`http://localhost:8080/groups/get`)
         .then(response => {
           setGroups(response.data);
-          
           console.log('Received groups details:', groups);
         })
         .catch(error => console.error('Error fetching group members:', error));
@@ -41,11 +50,10 @@ const OrderDetails = () => {
     axios.get(`http://localhost:8080/groups`)
         .then(response => {
           setGroupNames(response.data);
-          
           console.log('Received groups names:', groupNames);
         })
         .catch(error => console.error('Error fetching group names:', error));
-  }, [itemChips]);
+  }, []);
 
   useEffect(() => {
     const currentURL = window.location.href;
@@ -127,6 +135,38 @@ const OrderDetails = () => {
     setPersonTotals(newPersonTotals);
   }, [itemChips, orderDetails]);
   
+  useEffect(() => {
+    let timeoutId;
+  
+    if (saveConfirmation) {
+      // Set a timeout to hide the confirmation message after 3000 milliseconds (adjust as needed)
+      timeoutId = setTimeout(() => {
+        setSaveConfirmation(false);
+      }, 3000);
+    }
+  
+    return () => {
+      // Clear the timeout if the component unmounts or the confirmation is hidden manually
+      clearTimeout(timeoutId);
+    };
+  }, [saveConfirmation]);
+
+  useEffect(() => {
+    let timeoutId;
+  
+    if (saveFailure) {
+      // Set a timeout to hide the confirmation message after 3000 milliseconds (adjust as needed)
+      timeoutId = setTimeout(() => {
+        setSaveFailure(false);
+      }, 5000);
+    }
+  
+    return () => {
+      // Clear the timeout if the component unmounts or the confirmation is hidden manually
+      clearTimeout(timeoutId);
+    };
+  }, [saveFailure]);
+  
 
   const handleClearAllChips = () => {
     setItemChips({});
@@ -158,14 +198,8 @@ const OrderDetails = () => {
         try {
           // Get the ID of the matched group
           const groupId = matchedGroup.id;
-          console.log(groupId);
-  
-          console.log(groups);
           // Check the groups state to get the list of people IDs associated with that group
           const groupMembersIds = groups ? groups.filter((group) => group.groupId === groupId)?.map(group => group.personId).flat() : [];
-
-  
-          console.log("personIDs in this group=",groupMembersIds);
           // Check if groupMembersIds is not undefined before proceeding
           if (groupMembersIds) {
             groupMembersIds.forEach((personId) => {
@@ -310,17 +344,19 @@ const OrderDetails = () => {
         try {
           const response = await axios.post('http://localhost:8080/saveOrder', payload);
           console.log('Order saved successfully:', response.data);
-          // Handle success, e.g., show a success message to the user
+          setSaveConfirmation(true);
+          
         } catch (error) {
           console.error('Error saving order:', error);
-          // Handle error, e.g., show an error message to the user
         }
       } else {
         // Handle the case where the sum of chip quantities exceeds the item quantity
+        setSaveFailure(true);
         console.warn('The sum of quantities in chips for each item must be equal to the item quantity.');
       }
     } else {
       // Handle the case where not all items have at least one chip
+      setSaveFailure(true);
       console.warn('Please add at least one chip to each item before saving.');
     }
     setUnsavedChanges(false);
@@ -331,6 +367,12 @@ const OrderDetails = () => {
       event.returnValue = confirmationMessage;
       return confirmationMessage;
     }
+  };
+
+  const handleClose = () => {
+    // Navigate to "/orders" when the "Close" button is clicked
+    window.location.href = `/orders/`;
+    
   };
 
   useEffect(() => {
@@ -363,28 +405,50 @@ const OrderDetails = () => {
   if (!orderDetails) {
     return <div></div>;
   }
+  const totalCost = orderDetails.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return (
-    <div>
-      <h1>Order Details for Order ID: {orderID} <button onClick={handleSave}>Save</button></h1>
-      <div style={{ display: 'flex', flexDirection: 'row', marginTop: '10px' }}>
+    <div className="container mt-5">
+      <h1>Order Date: {orderDetails[0].date} | ${totalCost.toFixed(2)} <Button variant="primary" onClick={handleSave}>Save</Button></h1>
+      {saveConfirmation && (
+      <div className="alert alert-success" role="alert">
+        Order saved successfully!
+      </div>
+    )}
+    {saveFailure && (
+      <div className="alert alert-danger" role="alert">
+        Please add at least one person to each item, and ensure the sum of shares for each item adds up to the item quantity!
+      </div>
+    )}
+      <div className="d-flex flex-row mt-4">
+      <Card className="mr-3">
+          <Card.Body>
+            <Card.Title>Total Accounted For</Card.Title>
+            <Card.Text>{totalAmount?.toFixed(2) || 0}</Card.Text>
+          </Card.Body>
+        </Card>
         {people && itemChips &&
           people
             .filter(person => Object.values(itemChips).flat().some(chip => chip.id === person.id))
             .map(person => (
-              <div key={person.id} style={{ marginRight: '20px' }}>
-                <h4>{person.name}</h4>
-                <p>Total: {personTotals[person.id] || 0}</p>
-              </div>
+              <Card key={person.id} className="mr-3">
+                <Card.Body>
+                  <Card.Title>{person.name}</Card.Title>
+                  <Card.Text>Total: {personTotals[person.id]?.toFixed(2) || 0}</Card.Text>
+                </Card.Body>
+              </Card>
             ))}
       </div>
-      <button onClick={handleClearAllChips}>Clear All Chips</button>
-      <table>
+      <Button variant="danger" className="mt-3" onClick={handleClearAllChips}>Clear All Chips</Button>
+      <Button variant="secondary" className="mt-3 ml-2" onClick={handleClose}>Close</Button> {/* Close button */}
+      <Table striped bordered hover className="mt-3">
         <thead>
           <tr>
             <th>Name</th>
             <th>Price</th>
             <th>Quantity</th>
+            <th>Chips</th>
+            <th>Add Person</th>
           </tr>
         </thead>
         <tbody>
@@ -394,29 +458,28 @@ const OrderDetails = () => {
                   onDoubleClick={() => handleItemNameDoubleClick(item.name)}
               >
                 {item.name}
-                
               </td>
               <td>{item.price}</td>
               <td>{item.quantity}</td>
-              <td id="chips">
-              {itemChips[item.name] &&
-  itemChips[item.name].map((chip, index) => (
-    <Chip
-      key={chip.id}
-      label={`${chip.name} - ${chip.quantity.toFixed(2)}`} // Display float with 2 decimal places
-      id={chip.id}
-      onDelete={() => handleRemoveChip(item.name, chip.id)}
-      variant="outlined"
-      onClick={() => {
-        const newQuantity = parseFloat(
-          prompt(`Enter new quantity for ${chip.name}`, chip.quantity)
-        );
-        if (!isNaN(newQuantity) && newQuantity >= 0) {
-          handleQuantityChange(item.name, chip.id, newQuantity);
-        }
-      }}
-    />
-  ))}
+              <td>
+                {itemChips[item.name] &&
+                  itemChips[item.name].map((chip, index) => (
+                    <Chip
+                      key={chip.id}
+                      label={`${chip.name} - ${chip.quantity.toFixed(2)}`} // Display float with 2 decimal places
+                      id={chip.id}
+                      onDelete={() => handleRemoveChip(item.name, chip.id)}
+                      variant="outlined"
+                      onClick={() => {
+                        const newQuantity = parseFloat(
+                          prompt(`Enter new quantity for ${chip.name}`, chip.quantity)
+                        );
+                        if (!isNaN(newQuantity) && newQuantity >= 0) {
+                          handleQuantityChange(item.name, chip.id, newQuantity);
+                        }
+                      }}
+                    />
+                ))}
               </td>
               <td>
                 <input
@@ -428,7 +491,7 @@ const OrderDetails = () => {
             </tr>
           ))}
         </tbody>
-      </table>
+      </Table>
     </div>
   );
 };
