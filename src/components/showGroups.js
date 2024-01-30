@@ -73,6 +73,17 @@ const Groups = ({ people }) => {
     setGroupPersonMap(updatedGroupPersonMap);
   };
 
+  const handleRemoveGroup = async (groupId) => {
+    console.log('Tried removing group:');
+    try {
+      // Use axios.delete with a URL that includes the orderId as a path variable
+      const response = await axios.delete(`http://localhost:8080/groups/removeGroup/${groupId}`);
+      console.log('Group removal successful:', response.data);
+    } catch (error) {
+      console.error('Group removal unsuccessful:', error);
+    }
+  };
+
   const handleInputChange = (groupID, event) => {
     const value = event.target.value;
     setInputValues((prevValues) => ({
@@ -165,6 +176,14 @@ const Groups = ({ people }) => {
                       </InputGroup>
                     </div>
                   )}
+                  <Button
+                    variant="danger"
+                    style={{ backgroundColor: 'white', color: 'red', border: 'none' }}
+                    onClick={() => handleRemoveGroup(group.id)}
+                    className="ml-2"
+                  >
+                    &#10006; {/* Unicode for cross sign */}
+                  </Button>
                 </div>
               </Card.Body>
             </Card>
@@ -179,25 +198,7 @@ const Groups = ({ people }) => {
 
       {/* Modal for creating a new group */}
       <Modal show={showModal} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Create New Group</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group controlId="formGroupName" className="mb-3">
-              <Form.Label>Group Name:</Form.Label>
-              <Form.Control type="text" value={newGroupName} readOnly />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleConfirmCreateGroup}>
-            Create Group
-          </Button>
-        </Modal.Footer>
+        {/* ... (unchanged Modal code) */}
       </Modal>
     </div>
   );

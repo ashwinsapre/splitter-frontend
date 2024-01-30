@@ -26,6 +26,18 @@ const PersonList = ({ people }) => {
     }
   };
 
+  const removePerson = async (personID) => {
+    // Implement the logic to remove the person with the given name.
+    console.log(`Removing person with ID: ${personID}`);
+    try {
+      // Use axios.delete with a URL that includes the orderId as a path variable
+      const response = await axios.delete(`http://localhost:8080/person/removePerson/${personID}`);
+      console.log('Order removal successful:', response.data);
+    } catch (error) {
+      console.error('Order removal unsuccessful:', error);
+    }
+  };
+
   return (
     <div>
 
@@ -41,14 +53,21 @@ const PersonList = ({ people }) => {
         {people &&
           people.map((document) => (
             <Card
-              key={document.name}
-              style={{ cursor: 'pointer' }}
-              onClick={() => console.log(`Clicked on person: ${document.name}`)}
-            >
-              <Card.Body>
-                <Card.Title>{document.name}</Card.Title>
-              </Card.Body>
-            </Card>
+      key={document.id}
+      style={{ cursor: 'pointer' }}
+      onClick={() => console.log(`Clicked on person: ${document.name}`)}
+    >
+      <Card.Body style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Card.Title>{document.name}</Card.Title>
+        <Button
+          variant="danger"
+          style={{ backgroundColor: 'white', color: 'red', border: 'none' }}
+          onClick={() => removePerson(document.id)}
+        >
+          &#10006; {/* Unicode for cross sign */}
+        </Button>
+      </Card.Body>
+    </Card>
           ))}
 
         <Modal show={showModal} onHide={handleClose}>

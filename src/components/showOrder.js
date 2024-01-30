@@ -13,6 +13,15 @@ const OrderDetails = () => {
   const [unsavedChanges, setUnsavedChanges] = useState(false);
   const [groups, setGroups] = useState();
   const [groupNames, setGroupNames] = useState();
+  const [saveConfirmation, setSaveConfirmation] = useState(false);
+  const [saveFailure, setSaveFailure] = useState(false);
+  const [totalAmount, setTotalAmount] = useState(0);
+
+  useEffect(() => {
+    // Calculate the total amount whenever personTotals change
+    const sum = Object.values(personTotals).reduce((total, amount) => total + amount, 0);
+    setTotalAmount(sum);
+  }, [personTotals]);
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
@@ -34,7 +43,6 @@ const OrderDetails = () => {
     axios.get(`http://localhost:8080/groups/get`)
         .then(response => {
           setGroups(response.data);
-          
           console.log('Received groups details:', groups);
         })
         .catch(error => console.error('Error fetching group members:', error));
@@ -42,11 +50,10 @@ const OrderDetails = () => {
     axios.get(`http://localhost:8080/groups`)
         .then(response => {
           setGroupNames(response.data);
-          
           console.log('Received groups names:', groupNames);
         })
         .catch(error => console.error('Error fetching group names:', error));
-  }, [itemChips]);
+  }, []);
 
   useEffect(() => {
     const currentURL = window.location.href;
@@ -128,6 +135,38 @@ const OrderDetails = () => {
     setPersonTotals(newPersonTotals);
   }, [itemChips, orderDetails]);
   
+  useEffect(() => {
+    let timeoutId;
+  
+    if (saveConfirmation) {
+      // Set a timeout to hide the confirmation message after 3000 milliseconds (adjust as needed)
+      timeoutId = setTimeout(() => {
+        setSaveConfirmation(false);
+      }, 3000);
+    }
+  
+    return () => {
+      // Clear the timeout if the component unmounts or the confirmation is hidden manually
+      clearTimeout(timeoutId);
+    };
+  }, [saveConfirmation]);
+
+  useEffect(() => {
+    let timeoutId;
+  
+    if (saveFailure) {
+      // Set a timeout to hide the confirmation message after 3000 milliseconds (adjust as needed)
+      timeoutId = setTimeout(() => {
+        setSaveFailure(false);
+      }, 5000);
+    }
+  
+    return () => {
+      // Clear the timeout if the component unmounts or the confirmation is hidden manually
+      clearTimeout(timeoutId);
+    };
+  }, [saveFailure]);
+  
 
   const handleClearAllChips = () => {
     setItemChips({});
@@ -159,14 +198,8 @@ const OrderDetails = () => {
         try {
           // Get the ID of the matched group
           const groupId = matchedGroup.id;
-          console.log(groupId);
-  
-          console.log(groups);
           // Check the groups state to get the list of people IDs associated with that group
           const groupMembersIds = groups ? groups.filter((group) => group.groupId === groupId)?.map(group => group.personId).flat() : [];
-
-  
-          console.log("personIDs in this group=",groupMembersIds);
           // Check if groupMembersIds is not undefined before proceeding
           if (groupMembersIds) {
             groupMembersIds.forEach((personId) => {
@@ -311,17 +344,19 @@ const OrderDetails = () => {
         try {
           const response = await axios.post('http://localhost:8080/saveOrder', payload);
           console.log('Order saved successfully:', response.data);
-          // Handle success, e.g., show a success message to the user
+          setSaveConfirmation(true);
+          
         } catch (error) {
           console.error('Error saving order:', error);
-          // Handle error, e.g., show an error message to the user
         }
       } else {
         // Handle the case where the sum of chip quantities exceeds the item quantity
+        setSaveFailure(true);
         console.warn('The sum of quantities in chips for each item must be equal to the item quantity.');
       }
     } else {
       // Handle the case where not all items have at least one chip
+      setSaveFailure(true);
       console.warn('Please add at least one chip to each item before saving.');
     }
     setUnsavedChanges(false);
@@ -370,11 +405,28 @@ const OrderDetails = () => {
   if (!orderDetails) {
     return <div></div>;
   }
+  const totalCost = orderDetails.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return (
     <div className="container mt-5">
-      <h1>Order ID {orderID} <Button variant="primary" onClick={handleSave}>Save</Button></h1>
+      <h1>Order Date: {orderDetails[0].date} | ${totalCost.toFixed(2)} <Button variant="primary" onClick={handleSave}>Save</Button></h1>
+      {saveConfirmation && (
+      <div className="alert alert-success" role="alert">
+        Order saved successfully!
+      </div>
+    )}
+    {saveFailure && (
+      <div className="alert alert-danger" role="alert">
+        Please add at least one person to each item, and ensure the sum of shares for each item adds up to the item quantity!
+      </div>
+    )}
       <div className="d-flex flex-row mt-4">
+      <Card className="mr-3">
+          <Card.Body>
+            <Card.Title>Total Accounted For</Card.Title>
+            <Card.Text>{totalAmount?.toFixed(2) || 0}</Card.Text>
+          </Card.Body>
+        </Card>
         {people && itemChips &&
           people
             .filter(person => Object.values(itemChips).flat().some(chip => chip.id === person.id))
@@ -382,7 +434,7 @@ const OrderDetails = () => {
               <Card key={person.id} className="mr-3">
                 <Card.Body>
                   <Card.Title>{person.name}</Card.Title>
-                  <Card.Text>Total: {personTotals[person.id] || 0}</Card.Text>
+                  <Card.Text>Total: {personTotals[person.id]?.toFixed(2) || 0}</Card.Text>
                 </Card.Body>
               </Card>
             ))}
