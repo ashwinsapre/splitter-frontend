@@ -16,6 +16,7 @@ const OrderDetails = () => {
   const [saveConfirmation, setSaveConfirmation] = useState(false);
   const [saveFailure, setSaveFailure] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [orderDate, setOrderDate] = useState(0);
 
   useEffect(() => {
     // Calculate the total amount whenever personTotals change
@@ -67,6 +68,8 @@ const OrderDetails = () => {
         .then(response => {
           console.log('Received order details:', response.data);
           if (response) {
+            setOrderDate(response.data[0].name);
+            response.data.splice(0, 1);
             setOrderDetails(response.data);
           }
         })
@@ -409,7 +412,11 @@ const OrderDetails = () => {
 
   return (
     <div className="container mt-5">
-      <h1>Order Date: {orderDetails[0].date} | ${totalCost.toFixed(2)} <Button variant="primary" onClick={handleSave}>Save</Button></h1>
+      <h1>{new Intl.DateTimeFormat('en-US', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  }).format(new Date(orderDate))} | ${totalCost.toFixed(2)} <Button variant="primary" onClick={handleSave}>Save</Button></h1>
       {saveConfirmation && (
       <div className="alert alert-success" role="alert">
         Order saved successfully!
@@ -452,9 +459,10 @@ const OrderDetails = () => {
           </tr>
         </thead>
         <tbody>
-          {orderDetails.map(item => (
+          {orderDetails
+          .map(item => (
             <tr key={item.name}>
-              <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+              <td style={{ maxWidth: '500px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                   onDoubleClick={() => handleItemNameDoubleClick(item.name)}
               >
                 {item.name}

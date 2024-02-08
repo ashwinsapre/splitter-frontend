@@ -9,6 +9,8 @@ const handleFileClick = (file) => {
 
 const FileList = ({ directory, onUpload }) => {
   const [files, setFiles] = useState([]);
+  const [activeOrders, setActiveOrders] = useState([]);
+  const [archivedOrders, setArchivedOrders] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
   const [orderIdToRemove, setOrderIdToRemove] = useState(null);
@@ -20,17 +22,19 @@ const FileList = ({ directory, onUpload }) => {
 
   const handleShow = () => setShowModal(true);
 
-  const fetchFiles = async () => {
-    try {
-      const response = await axios.get(`http://localhost:8080/orders`);
-      setFiles(response.data);
-      console.log(response.data);
-    } catch (error) {
-      console.error('Error fetching files:', error);
-    }
-  };
-
   useEffect(() => {
+    const fetchFiles = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/orders`);
+        const allOrders = response.data;
+        setFiles(allOrders);
+        setActiveOrders(allOrders.filter(order => !order.archived));
+        setArchivedOrders(allOrders.filter(order => order.archived));
+      } catch (error) {
+        console.error('Error fetching files:', error);
+      }
+    };
+
     fetchFiles();
   }, []);
 
@@ -44,18 +48,30 @@ const FileList = ({ directory, onUpload }) => {
     setConfirmModal(true);
   };
 
+
   const confirmRemoveOrder = async () => {
-    console.log('Removing order with ID:', orderIdToRemove);
+    console.log('Archiving order with ID:', orderIdToRemove);
   
     try {
-    
       const response = await axios.delete(`http://localhost:8080/orders/removeOrder/${orderIdToRemove}`);
-      console.log('Order removal successful:', response.data);
+      console.log('Order (un)archival successful:', response.data);
   
       // Update the state to remove the deleted order from the list
-      setFiles((prevFiles) => prevFiles.filter((document) => document.orderId !== orderIdToRemove));
+      const fetchFiles = async () => {
+        try {
+          const response = await axios.get(`http://localhost:8080/orders`);
+          const allOrders = response.data;
+          setFiles(allOrders);
+          setActiveOrders(allOrders.filter(order => !order.archived));
+          setArchivedOrders(allOrders.filter(order => order.archived));
+        } catch (error) {
+          console.error('Error fetching files:', error);
+        }
+      };
+  
+      fetchFiles();
     } catch (error) {
-      console.error('Order removal unsuccessful:', error);
+      console.error('Order (un)archival unsuccessful:', error);
     }
   
     // After successful removal or not, close the confirm modal
@@ -86,15 +102,18 @@ const FileList = ({ directory, onUpload }) => {
           </Card.Body>
         </Card>
 
-        {files.map((document) => (
+        {activeOrders.map((document) => (
           <Card
             key={document.orderId}
-            style={{ cursor: 'pointer' }}
           >
             <Card.Body style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <Card.Title onClick={() => handleFileClick(document.orderId)}>ID: {document.orderId}</Card.Title>
-                <Card.Text onClick={() => handleFileClick(document.orderId)}>Date: {document.date}</Card.Text>
+                <Card.Title  style={{ cursor: 'pointer' }} onClick={() => handleFileClick(document.orderId)}>{new Intl.DateTimeFormat('en-US', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  }).format(new Date(document.date))}</Card.Title>
+                <Card.Text onClick={() => handleFileClick(document.orderId)}>{document.orderId}</Card.Text>
               </div>
               <Button
                 variant="danger"
@@ -106,11 +125,42 @@ const FileList = ({ directory, onUpload }) => {
                 onClick={() => handleRemoveOrder(document.orderId)}
                 className="ml-2"
               >
-                &#10006; {/* Unicode for cross sign */}
+                &#10006; {/* Unicode for undo sign */}
               </Button>
             </Card.Body>
           </Card>
         ))}
+      </div>
+    <div className="container mt-5">
+      {archivedOrders.map((document) => (
+          <Card
+            key={document.orderId}
+          >
+            <Card.Body style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <Card.Title  style={{ cursor: 'pointer' }} onClick={() => handleFileClick(document.orderId)}> {new Intl.DateTimeFormat('en-US', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  }).format(new Date(document.date))} (archived)</Card.Title>
+                <Card.Text onClick={() => handleFileClick(document.orderId)}>{document.orderId}</Card.Text>
+              </div>
+              <Button
+                variant="danger"
+                style={{
+                  backgroundColor: 'white',
+                  color: 'black',
+                  border: 'none',
+                }}
+                onClick={() => handleRemoveOrder(document.orderId)}
+                className="ml-2"
+              >
+                &#9100; {/* Unicode for cross sign */}
+              </Button>
+            </Card.Body>
+          </Card>
+        ))}
+      </div>
 
         {/* Upload Modal */}
         <Modal show={showModal} onHide={handleClose}>
@@ -138,22 +188,22 @@ const FileList = ({ directory, onUpload }) => {
         {/* Confirm Remove Order Modal */}
         <Modal show={confirmModal} onHide={handleClose}>
           <Modal.Header closeButton>
-            <Modal.Title>Confirm Removal</Modal.Title>
+            <Modal.Title>Confirmation</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            Are you sure you want to remove this order?
+            Are you sure? 
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleClose}>
               Cancel
             </Button>
             <Button variant="danger" onClick={confirmRemoveOrder}>
-              Remove
+              Confirm
             </Button>
           </Modal.Footer>
         </Modal>
       </div>
-    </div>
+  
   );
 };
 

@@ -74,15 +74,18 @@ const Groups = ({ people }) => {
   };
 
   const handleRemoveGroup = async (groupId) => {
-    console.log('Tried removing group:');
     try {
-      // Use axios.delete with a URL that includes the orderId as a path variable
+      // Use axios.delete with a URL that includes the groupId as a path variable
       const response = await axios.delete(`http://localhost:8080/groups/removeGroup/${groupId}`);
       console.log('Group removal successful:', response.data);
+  
+      // After successful deletion, fetch the updated list of groups
+      fetchGroups();
     } catch (error) {
       console.error('Group removal unsuccessful:', error);
     }
   };
+  
 
   const handleInputChange = (groupID, event) => {
     const value = event.target.value;
@@ -198,7 +201,25 @@ const Groups = ({ people }) => {
 
       {/* Modal for creating a new group */}
       <Modal show={showModal} onHide={handleClose}>
-        {/* ... (unchanged Modal code) */}
+        <Modal.Header closeButton>
+          <Modal.Title>Create New Group</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="formGroupName" className="mb-3">
+              <Form.Label>Group Name:</Form.Label>
+              <Form.Control type="text" onChange={(e) => setNewGroupName(e.target.value)} />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleConfirmCreateGroup}>
+            Create Group
+          </Button>
+        </Modal.Footer>
       </Modal>
     </div>
   );

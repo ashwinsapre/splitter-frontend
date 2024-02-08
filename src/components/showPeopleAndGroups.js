@@ -6,12 +6,14 @@ import { Navbar, Nav } from 'react-bootstrap';
 
 const PeopleAndGroups = () => {
   const [people, setPeople] = useState(null);
+  const [archivedPeople, setArchivedPeople] = useState(null);
 
   useEffect(() => {
     const fetchPeople = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/person`);
-        setPeople(response.data);
+        setPeople(response.data.filter(person => !person.archived));
+        setArchivedPeople(response.data.filter(person => person.archived));
         console.log(response.data);
       } catch (error) {
         console.error('Error fetching people:', error);
@@ -20,6 +22,18 @@ const PeopleAndGroups = () => {
 
     fetchPeople();
   }, []);
+
+  
+  const updatePeople = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/person`);
+      setPeople(response.data.filter(person => !person.archived));
+      setArchivedPeople(response.data.filter(person => person.archived));
+      console.log('People updated:', response.data);
+    } catch (error) {
+      console.error('Error updating people:', error);
+    }
+  };
 
   return (
     <div className="container-fluid">
@@ -38,11 +52,11 @@ const PeopleAndGroups = () => {
       </Navbar>
         <div className="col-md-6">
           {/* People Component */}
-          <PersonList people={people} />
+          <PersonList people={people} archivedPeople={archivedPeople} updatePeople={updatePeople} />
         </div>
         <div className="col-md-6">
           {/* Groups Component */}
-          <Groups people={people}/>
+          <Groups people={people} archivedPeople={archivedPeople}/>
         </div>
       </div>
     </div>
