@@ -14,6 +14,12 @@ const Groups = ({ people }) => {
   const handleClose = () => setShowModal(false);
   const handleShow = () => setShowModal(true);
 
+  const toCamelCase = (name) => {
+    return name.replace(/\w\S*/g, function(txt) {
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+  };
+
   const fetchGroups = async () => {
     try {
       const response = await axios.get(`http://localhost:8080/groups`);
@@ -147,9 +153,8 @@ const Groups = ({ people }) => {
   return (
     <div className="container mt-5">
       <Card className="mt-3 mb-0" style={{ cursor: 'pointer' }} onClick={handleShow}>
-        <Card.Body>
-          <Card.Title>Create New Group</Card.Title>
-          <Card.Text>Click here to create a new group.</Card.Text>
+        <Card.Body style={{ backgroundColor: '#e7f0f7' }}>
+          <Card.Title style={{ fontWeight: 'bold' }}>Create New Group</Card.Title>
         </Card.Body>
       </Card>
       {groups ? (
@@ -164,7 +169,7 @@ const Groups = ({ people }) => {
                       {groupPersonMap[group.id].map((memberName) => (
                         <Chip
                           key={memberName}
-                          label={memberName}
+                          label={toCamelCase(memberName)}
                           onDelete={() => handleRemovePersonFromGroup(group.id, memberName)}
                           variant="outlined"
                           className="m-1"
@@ -195,7 +200,7 @@ const Groups = ({ people }) => {
       ) : (
         <p>No groups available</p>
       )}
-      <Button variant="success" className="mt-3" onClick={handleSave}>
+      <Button className="mt-3" onClick={handleSave} style={{ borderColor: '#ffc120', fontWeight: 'bold', backgroundColor: '#ffc120' }}>
         Save Group Members
       </Button>
 

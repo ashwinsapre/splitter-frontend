@@ -9,6 +9,24 @@ const PersonList = ({ people, archivedPeople, updatePeople }) => {
   const handleClose = () => setShowModal(false);
   const handleShow = () => setShowModal(true);
 
+  const handlePersonClick = (person) => {
+    console.log(`Clicked on person: ${person}`);
+    const destinationURL = `/person/${person}`;
+    if (window.location.href.includes(destinationURL)) {
+      return;
+    }
+    else{
+      window.location.href = destinationURL;
+    }
+  };
+  
+
+  const toCamelCase = (name) => {
+    return name.replace(/\w\S*/g, function(txt) {
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+  };
+
   const createNewPerson = async (newName) => {
     if (newName) {
       const formData = new FormData();
@@ -46,16 +64,15 @@ const PersonList = ({ people, archivedPeople, updatePeople }) => {
         console.error('Person removal unsuccessful:', error);
     }
 };
+  
+
 
   return (
     <div>
-
-      {/* Content */}
       <div className="container mt-5">
         <Card style={{ cursor: 'pointer' }} onClick={handleShow}>
-          <Card.Body>
-            <Card.Title>Add New Person</Card.Title>
-            <Card.Text>Click here to add a new person.</Card.Text>
+          <Card.Body style={{ backgroundColor: '#e7f0f7' }}>
+            <Card.Title style={{ fontWeight: 'bold' }}>Add New Person</Card.Title>
           </Card.Body>
         </Card>
 
@@ -64,10 +81,9 @@ const PersonList = ({ people, archivedPeople, updatePeople }) => {
             <Card
       key={document.id}
       style={{ cursor: 'pointer' }}
-      onClick={() => console.log(`Clicked on person: ${document.name}`)}
     >
       <Card.Body style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Card.Title>{document.name}</Card.Title>
+        <Card.Title onClick={() => handlePersonClick(document.id)}>{toCamelCase(document.name)}</Card.Title>
         <Button
           variant="danger"
           style={{ backgroundColor: 'white', color: 'red', border: 'none' }}
@@ -87,10 +103,9 @@ const PersonList = ({ people, archivedPeople, updatePeople }) => {
             <Card
       key={document.id}
       style={{ cursor: 'pointer' }}
-      onClick={() => console.log(`Clicked on person: ${document.name}`)}
     >
-      <Card.Body style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Card.Title>{document.name}</Card.Title>
+      <Card.Body style={{ backgroundColor: '#e7f0f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Card.Title style={{fontWeight: 'bold'}}>{toCamelCase(document.name)}</Card.Title>
         <Button
           variant="danger"
           style={{ backgroundColor: 'white', color: 'black', border: 'none'}}

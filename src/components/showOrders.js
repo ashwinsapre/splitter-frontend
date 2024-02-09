@@ -81,13 +81,16 @@ const FileList = ({ directory, onUpload }) => {
   return (
     <div className="container-fluid">
       {/* Navbar */}
-      <Navbar bg="light" expand="lg" className="w-100">
-        <Navbar.Brand href="/home">Walmart Splitter</Navbar.Brand>
+      <Navbar expand="lg" className="w-100" style={{backgroundColor: '#0071ce'}}>
+      <Navbar.Brand href="/home" style={{ fontWeight: 'bold' }}>
+        <span style={{ color: 'white' }}>Walmart</span>{' '}
+        <span style={{ color: '#ffc120' }}>Splitter</span>
+      </Navbar.Brand>
         <Navbar.Toggle aria-controls="navbarNav" />
         <Navbar.Collapse id="navbarNav">
           <Nav className="mr-auto">
-            <Nav.Link href="/person">People</Nav.Link>
-            <Nav.Link href="#">About</Nav.Link>
+            <Nav.Link href="/person" style={{ fontWeight: 'bold', color: 'white' }}>People</Nav.Link>
+            <Nav.Link href="#" style={{ fontWeight: 'bold', color: 'white' }}>About</Nav.Link>
             {/* Add more links as needed */}
           </Nav>
         </Navbar.Collapse>
@@ -95,10 +98,9 @@ const FileList = ({ directory, onUpload }) => {
 
       {/* Content */}
       <div className="container mt-5">
-        <Card style={{ cursor: 'pointer' }} onClick={handleShow}>
+        <Card style={{  backgroundColor: '#e7f0f7', cursor: 'pointer' }} onClick={handleShow}>
           <Card.Body>
-            <Card.Title>Add New Order</Card.Title>
-            <Card.Text>Upload saved HTML from your Walmart Order Invoice</Card.Text>
+            <Card.Title>Add New Order</Card.Title>  
           </Card.Body>
         </Card>
 
