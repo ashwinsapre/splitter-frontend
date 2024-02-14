@@ -170,6 +170,11 @@ const OrderDetails = () => {
     };
   }, [saveFailure]);
   
+  const toCamelCase = (name) => {
+    return name.replace(/\w\S*/g, function(txt) {
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+  };
 
   const handleClearAllChips = () => {
     setItemChips({});
@@ -372,11 +377,6 @@ const OrderDetails = () => {
     }
   };
 
-  const handleClose = () => {
-    // Navigate to "/orders" when the "Close" button is clicked
-    window.location.href = `/orders/`;
-    
-  };
 
   useEffect(() => {
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -416,7 +416,7 @@ const OrderDetails = () => {
                     day: 'numeric',
                     month: 'short',
                     year: 'numeric',
-                  }).format(new Date(orderDate))} | ${totalCost.toFixed(2)} <Button variant="primary" onClick={handleSave}>Save</Button></h1>
+                  }).format(new Date(orderDate))} | ${totalCost.toFixed(2)} <Button variant="primary" onClick={handleSave}>Save</Button> <Button variant="danger" className="mt-3" onClick={handleClearAllChips}>Clear All Shares</Button></h1>
       {saveConfirmation && (
       <div className="alert alert-success" role="alert">
         Order saved successfully!
@@ -440,14 +440,12 @@ const OrderDetails = () => {
             .map(person => (
               <Card key={person.id} className="mr-3">
                 <Card.Body>
-                  <Card.Title>{person.name}</Card.Title>
+                  <Card.Title>{toCamelCase(person.name)}</Card.Title>
                   <Card.Text>Total: {personTotals[person.id]?.toFixed(2) || 0}</Card.Text>
                 </Card.Body>
               </Card>
             ))}
       </div>
-      <Button variant="danger" className="mt-3" onClick={handleClearAllChips}>Clear All Chips</Button>
-      <Button variant="secondary" className="mt-3 ml-2" onClick={handleClose}>Close</Button> {/* Close button */}
       <Table striped bordered hover className="mt-3">
         <thead>
           <tr>
@@ -455,7 +453,7 @@ const OrderDetails = () => {
             <th>Price</th>
             <th>Quantity</th>
             <th>Chips</th>
-            <th>Add Person</th>
+            <th>Add Person/Group  </th>
           </tr>
         </thead>
         <tbody>
@@ -474,7 +472,7 @@ const OrderDetails = () => {
                   itemChips[item.name].map((chip, index) => (
                     <Chip
                       key={chip.id}
-                      label={`${chip.name} - ${chip.quantity.toFixed(2)}`} // Display float with 2 decimal places
+                      label={`${toCamelCase(chip.name)} - ${chip.quantity.toFixed(2)}`} // Display float with 2 decimal places
                       id={chip.id}
                       onDelete={() => handleRemoveChip(item.name, chip.id)}
                       variant="outlined"

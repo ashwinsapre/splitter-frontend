@@ -24,7 +24,7 @@ const PersonDetails = ({ people }) => {
     if (pid) {
       axios.get(`http://localhost:8080/person/${pid}`)
         .then(response => {
-          console.log(response.data.flat());
+          console.log(response.data);
           setOrderHistory(response.data.flat());
           const orders = response.data.flat(); // Flatten the nested arrays
           const orderTotals = new Map();

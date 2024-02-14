@@ -200,7 +200,7 @@ const Groups = ({ people }) => {
       ) : (
         <p>No groups available</p>
       )}
-      <Button className="mt-3" onClick={handleSave} style={{ borderColor: '#ffc120', fontWeight: 'bold', backgroundColor: '#ffc120' }}>
+      <Button className="mt-3" onClick={handleSave} style={{ borderColor: '#ffc120', fontWeight: 'bold', backgroundColor: '#0071ce' }}>
         Save Group Members
       </Button>
 

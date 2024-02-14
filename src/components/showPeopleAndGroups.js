@@ -53,24 +53,19 @@ const PeopleAndGroups = () => {
           </Nav>
         </Navbar.Collapse>
       </Navbar>
+
+      <div style={{ display: 'flex' }}>
+      {/* Display the FileList component with the key */}
+        <div style={{ flex: 1 }}>
+        <Groups people={people} archivedPeople={archivedPeople}/>
+        <PersonList people={people} archivedPeople={archivedPeople} updatePeople={updatePeople} />
+        
+        </div>
+        <div style={{ flex: 4 }}>
+        <PersonDetails people={people}/>
+        </div>
+    </div>
       
-      <div className="row">
-        <div className="col-md-6">
-          {/* People Component */}
-          <PersonList people={people} archivedPeople={archivedPeople} updatePeople={updatePeople} />
-        </div>
-        <div className="col-md-6">
-          {/* Groups Component */}
-          <Groups people={people} archivedPeople={archivedPeople}/>
-        </div>
-      </div>
-      
-      <div className="row mt-3">
-        <div className="col-md-12">
-          {/* PersonDetails Component */}
-          <PersonDetails people={people}/>
-        </div>
-      </div>
     </div>
   );
 };
