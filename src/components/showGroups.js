@@ -10,6 +10,7 @@ const Groups = ({ people }) => {
   const [inputValues, setInputValues] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
+  const [editingGroupId, setEditingGroupId] = useState(null);
 
   const handleClose = () => setShowModal(false);
   const handleShow = () => setShowModal(true);
@@ -91,7 +92,6 @@ const Groups = ({ people }) => {
       console.error('Group removal unsuccessful:', error);
     }
   };
-  
 
   const handleInputChange = (groupID, event) => {
     const value = event.target.value;
@@ -150,6 +150,33 @@ const Groups = ({ people }) => {
     fetchGroups();
   };
 
+  const handleGroupNameClick = (groupId) => {
+    setEditingGroupId(groupId);
+  };
+
+  const handleGroupNameChange = async (event, groupId) => {
+    console.log('Key pressed:', event.key);
+    console.log('Input value:', event.target.value);
+    console.log('Group ID:', groupId);
+    
+    if (event.key === 'Enter' && event.target.value.trim() !== '') {
+      const newName = event.target.value;
+      try {
+        const formData = new FormData();
+        formData.append('name', newName);
+        await axios.post(`http://localhost:8080/groups/set/${groupId}`, formData);
+        console.log(`Group name updated successfully for group ID ${groupId}`);
+      } catch (error) {
+        console.error(`Error updating group name for group ID ${groupId}:`, error);
+        // Revert the local state change if there's an error
+        fetchGroups();
+      }
+    }
+  };
+  
+  
+  
+
   return (
     <div className="container mt-5">
       <Card className="mt-3 mb-0" style={{ cursor: 'pointer' }} onClick={handleShow}>
@@ -163,7 +190,18 @@ const Groups = ({ people }) => {
             <Card key={group.id} className="mt-3 mb-0">
               <Card.Body>
                 <div className="d-flex justify-content-between align-items-center">
-                  <Card.Title>{group.name}</Card.Title>
+                  {editingGroupId === group.id ? (
+                    <Form.Control
+                      type="text"
+                      defaultValue={group.name}
+                      onChange={(e) => handleGroupNameChange(e, group.id)}
+                      onKeyPress={(e) => handleGroupNameChange(e, group.id)}
+                    />
+                  ) : (
+                    <Card.Title onClick={() => handleGroupNameClick(group.id)}>
+                      {group.name}
+                    </Card.Title>
+                  )}
                   {groupMembers && groupPersonMap[group.id] && (
                     <div className="d-flex flex-wrap">
                       {groupPersonMap[group.id].map((memberName) => (
@@ -180,6 +218,7 @@ const Groups = ({ people }) => {
                           placeholder="Add person..."
                           value={inputValues[group.id] || ''}
                           onChange={(e) => handleInputChange(group.id, e)}
+                          onKeyPress={(e) => handleInputChange(group.id, e)}
                         />
                       </InputGroup>
                     </div>
